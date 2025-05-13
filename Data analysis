@@ -1,0 +1,57 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import seaborn as sns
+import plotly.express as px
+
+# Step 1: Load dataset
+df = pd.read_csv('owid-covid-data.csv')
+
+# Step 2: Convert 'date' column to datetime
+df['date'] = pd.to_datetime(df['date'])
+
+# Step 3: Filter for selected countries
+countries = ['Kenya', 'India', 'United States']
+df = df[df['location'].isin(countries)]
+
+# Step 4: Drop rows with missing critical values
+df = df.dropna(subset=['total_cases', 'total_deaths'])
+
+# Step 5: Fill missing numeric values
+df = df.fillna(method='ffill')
+
+# Step 6: Plot total cases over time
+plt.figure(figsize=(12,6))
+for country in countries:
+    subset = df[df['location'] == country]
+    plt.plot(subset['date'], subset['total_cases'], label=country)
+plt.title('Total COVID-19 Cases Over Time')
+plt.xlabel('Date')
+plt.ylabel('Total Cases')
+plt.legend()
+plt.grid(True)
+plt.show()
+
+# Step 7: Plot vaccination progress over time
+plt.figure(figsize=(12,6))
+for country in countries:
+    subset = df[df['location'] == country]
+    plt.plot(subset['date'], subset['total_vaccinations'], label=country)
+plt.title('Vaccination Progress Over Time')
+plt.xlabel('Date')
+plt.ylabel('Total Vaccinations')
+plt.legend()
+plt.grid(True)
+plt.show()
+
+# Step 8: Create choropleth map (latest date)
+latest_date = df['date'].max()
+latest_df = df[df['date'] == latest_date]
+
+fig = px.choropleth(latest_df,
+                    locations="iso_code",
+                    color="total_cases",
+                    hover_name="location",
+                    title="Total COVID-19 Cases by Country")
+fig.show()
+
+
